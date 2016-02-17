@@ -43,7 +43,7 @@ After the client libarary is installed/deployed, you can use it in your Maven pr
 
 The following example loads a file (/tmp/car1.jpg) from disk and gets the vehicle color and license plate information from OpenALPR CLoud
 
-```
+```java
 
     import com.openalpr.api.DefaultApi;
     import com.openalpr.api.invoker.ApiException;
