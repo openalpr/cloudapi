@@ -1,0 +1,3 @@
+[submodule "ruby"]
+	path = ruby
+	url = git@github.com:MatUrbanski/alpr_ruby.git
