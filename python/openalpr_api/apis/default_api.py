@@ -108,8 +108,6 @@ class DefaultApi(object):
             query_params['secret_key'] = params['secret_key']
         if 'tasks' in params:
             query_params['tasks'] = params['tasks']
-        if 'image_bytes' in params:
-            query_params['image_bytes'] = params['image_bytes']
         if 'image_url' in params:
             query_params['image_url'] = params['image_url']
         if 'country' in params:
@@ -131,6 +129,9 @@ class DefaultApi(object):
             files['image'] = params['image']
 
         body_params = None
+
+        if 'image_bytes' in params:
+            form_params['image_bytes'] = params['image_bytes']
 
         # HTTP header `Accept`
         header_params['Accept'] = self.api_client.\
