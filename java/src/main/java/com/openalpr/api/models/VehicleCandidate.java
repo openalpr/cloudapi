@@ -33,71 +33,50 @@ import java.math.BigDecimal;
 
 
 /**
- * PlateCandidate
+ * VehicleCandidate
  */
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2017-02-24T16:12:49.437-05:00")
-public class PlateCandidate   {
-  @SerializedName("plate")
-  private String plate = null;
+public class VehicleCandidate   {
+  @SerializedName("name")
+  private String name = null;
 
   @SerializedName("confidence")
   private BigDecimal confidence = null;
 
-  @SerializedName("matches_template")
-  private Integer matchesTemplate = null;
-
-  public PlateCandidate plate(String plate) {
-    this.plate = plate;
+  public VehicleCandidate name(String name) {
+    this.name = name;
     return this;
   }
 
    /**
-   * Plate number
-   * @return plate
+   * name of value
+   * @return name
   **/
-  @ApiModelProperty(example = "null", value = "Plate number")
-  public String getPlate() {
-    return plate;
+  @ApiModelProperty(example = "null", value = "name of value")
+  public String getName() {
+    return name;
   }
 
-  public void setPlate(String plate) {
-    this.plate = plate;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public PlateCandidate confidence(BigDecimal confidence) {
+  public VehicleCandidate confidence(BigDecimal confidence) {
     this.confidence = confidence;
     return this;
   }
 
    /**
-   * Confidence percentage that the plate number is correct
+   * confidence of value (percent)
    * @return confidence
   **/
-  @ApiModelProperty(example = "null", value = "Confidence percentage that the plate number is correct")
+  @ApiModelProperty(example = "null", value = "confidence of value (percent)")
   public BigDecimal getConfidence() {
     return confidence;
   }
 
   public void setConfidence(BigDecimal confidence) {
     this.confidence = confidence;
-  }
-
-  public PlateCandidate matchesTemplate(Integer matchesTemplate) {
-    this.matchesTemplate = matchesTemplate;
-    return this;
-  }
-
-   /**
-   * Indicates whether the plate matched a regional text pattern
-   * @return matchesTemplate
-  **/
-  @ApiModelProperty(example = "null", value = "Indicates whether the plate matched a regional text pattern")
-  public Integer getMatchesTemplate() {
-    return matchesTemplate;
-  }
-
-  public void setMatchesTemplate(Integer matchesTemplate) {
-    this.matchesTemplate = matchesTemplate;
   }
 
 
@@ -109,25 +88,23 @@ public class PlateCandidate   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PlateCandidate plateCandidate = (PlateCandidate) o;
-    return Objects.equals(this.plate, plateCandidate.plate) &&
-        Objects.equals(this.confidence, plateCandidate.confidence) &&
-        Objects.equals(this.matchesTemplate, plateCandidate.matchesTemplate);
+    VehicleCandidate vehicleCandidate = (VehicleCandidate) o;
+    return Objects.equals(this.name, vehicleCandidate.name) &&
+        Objects.equals(this.confidence, vehicleCandidate.confidence);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(plate, confidence, matchesTemplate);
+    return Objects.hash(name, confidence);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class PlateCandidate {\n");
+    sb.append("class VehicleCandidate {\n");
     
-    sb.append("    plate: ").append(toIndentedString(plate)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    confidence: ").append(toIndentedString(confidence)).append("\n");
-    sb.append("    matchesTemplate: ").append(toIndentedString(matchesTemplate)).append("\n");
     sb.append("}");
     return sb.toString();
   }
