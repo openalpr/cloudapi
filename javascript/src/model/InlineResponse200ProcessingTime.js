@@ -34,7 +34,7 @@
     if (!root.OpenalprApi) {
       root.OpenalprApi = {};
     }
-    root.OpenalprApi.RegionOfInterest = factory(root.OpenalprApi.ApiClient);
+    root.OpenalprApi.InlineResponse200ProcessingTime = factory(root.OpenalprApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
@@ -43,14 +43,14 @@
 
 
   /**
-   * The RegionOfInterest model module.
-   * @module model/RegionOfInterest
+   * The InlineResponse200ProcessingTime model module.
+   * @module model/InlineResponse200ProcessingTime
    * @version 2.0.1
    */
 
   /**
-   * Constructs a new <code>RegionOfInterest</code>.
-   * @alias module:model/RegionOfInterest
+   * Constructs a new <code>InlineResponse200ProcessingTime</code>.
+   * @alias module:model/InlineResponse200ProcessingTime
    * @class
    */
   var exports = function() {
@@ -59,52 +59,47 @@
 
 
 
-
   };
 
   /**
-   * Constructs a <code>RegionOfInterest</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>InlineResponse200ProcessingTime</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/RegionOfInterest} obj Optional instance to populate.
-   * @return {module:model/RegionOfInterest} The populated <code>RegionOfInterest</code> instance.
+   * @param {module:model/InlineResponse200ProcessingTime} obj Optional instance to populate.
+   * @return {module:model/InlineResponse200ProcessingTime} The populated <code>InlineResponse200ProcessingTime</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('x')) {
-        obj['x'] = ApiClient.convertToType(data['x'], 'Integer');
+      if (data.hasOwnProperty('total')) {
+        obj['total'] = ApiClient.convertToType(data['total'], 'Number');
       }
-      if (data.hasOwnProperty('y')) {
-        obj['y'] = ApiClient.convertToType(data['y'], 'Integer');
+      if (data.hasOwnProperty('plates')) {
+        obj['plates'] = ApiClient.convertToType(data['plates'], 'Number');
       }
-      if (data.hasOwnProperty('width')) {
-        obj['width'] = ApiClient.convertToType(data['width'], 'Integer');
-      }
-      if (data.hasOwnProperty('height')) {
-        obj['height'] = ApiClient.convertToType(data['height'], 'Integer');
+      if (data.hasOwnProperty('vehicles')) {
+        obj['vehicles'] = ApiClient.convertToType(data['vehicles'], 'Number');
       }
     }
     return obj;
   }
 
   /**
-   * @member {Integer} x
+   * Time spent processing all tasks (in milliseconds)
+   * @member {Number} total
    */
-  exports.prototype['x'] = undefined;
+  exports.prototype['total'] = undefined;
   /**
-   * @member {Integer} y
+   * Time spent performing license plate recognition (in milliseconds)
+   * @member {Number} plates
    */
-  exports.prototype['y'] = undefined;
+  exports.prototype['plates'] = undefined;
   /**
-   * @member {Integer} width
+   * Time spent performing vehicle recognition (in milliseconds)
+   * @member {Number} vehicles
    */
-  exports.prototype['width'] = undefined;
-  /**
-   * @member {Integer} height
-   */
-  exports.prototype['height'] = undefined;
+  exports.prototype['vehicles'] = undefined;
 
 
 

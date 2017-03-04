@@ -34,7 +34,7 @@
     if (!root.OpenalprApi) {
       root.OpenalprApi = {};
     }
-    root.OpenalprApi.RegionOfInterest = factory(root.OpenalprApi.ApiClient);
+    root.OpenalprApi.VehicleCandidate = factory(root.OpenalprApi.ApiClient);
   }
 }(this, function(ApiClient) {
   'use strict';
@@ -43,14 +43,14 @@
 
 
   /**
-   * The RegionOfInterest model module.
-   * @module model/RegionOfInterest
+   * The VehicleCandidate model module.
+   * @module model/VehicleCandidate
    * @version 2.0.1
    */
 
   /**
-   * Constructs a new <code>RegionOfInterest</code>.
-   * @alias module:model/RegionOfInterest
+   * Constructs a new <code>VehicleCandidate</code>.
+   * @alias module:model/VehicleCandidate
    * @class
    */
   var exports = function() {
@@ -58,53 +58,39 @@
 
 
 
-
-
   };
 
   /**
-   * Constructs a <code>RegionOfInterest</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>VehicleCandidate</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/RegionOfInterest} obj Optional instance to populate.
-   * @return {module:model/RegionOfInterest} The populated <code>RegionOfInterest</code> instance.
+   * @param {module:model/VehicleCandidate} obj Optional instance to populate.
+   * @return {module:model/VehicleCandidate} The populated <code>VehicleCandidate</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('x')) {
-        obj['x'] = ApiClient.convertToType(data['x'], 'Integer');
+      if (data.hasOwnProperty('name')) {
+        obj['name'] = ApiClient.convertToType(data['name'], 'String');
       }
-      if (data.hasOwnProperty('y')) {
-        obj['y'] = ApiClient.convertToType(data['y'], 'Integer');
-      }
-      if (data.hasOwnProperty('width')) {
-        obj['width'] = ApiClient.convertToType(data['width'], 'Integer');
-      }
-      if (data.hasOwnProperty('height')) {
-        obj['height'] = ApiClient.convertToType(data['height'], 'Integer');
+      if (data.hasOwnProperty('confidence')) {
+        obj['confidence'] = ApiClient.convertToType(data['confidence'], 'Number');
       }
     }
     return obj;
   }
 
   /**
-   * @member {Integer} x
+   * name of value
+   * @member {String} name
    */
-  exports.prototype['x'] = undefined;
+  exports.prototype['name'] = undefined;
   /**
-   * @member {Integer} y
+   * confidence of value (percent)
+   * @member {Number} confidence
    */
-  exports.prototype['y'] = undefined;
-  /**
-   * @member {Integer} width
-   */
-  exports.prototype['width'] = undefined;
-  /**
-   * @member {Integer} height
-   */
-  exports.prototype['height'] = undefined;
+  exports.prototype['confidence'] = undefined;
 
 
 

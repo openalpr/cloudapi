@@ -25,32 +25,32 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['ApiClient'], factory);
+    define(['ApiClient', 'model/VehicleCandidate'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // CommonJS-like environments that support module.exports, like Node.
-    module.exports = factory(require('../ApiClient'));
+    module.exports = factory(require('../ApiClient'), require('./VehicleCandidate'));
   } else {
     // Browser globals (root is window)
     if (!root.OpenalprApi) {
       root.OpenalprApi = {};
     }
-    root.OpenalprApi.RegionOfInterest = factory(root.OpenalprApi.ApiClient);
+    root.OpenalprApi.VehicleDetails = factory(root.OpenalprApi.ApiClient, root.OpenalprApi.VehicleCandidate);
   }
-}(this, function(ApiClient) {
+}(this, function(ApiClient, VehicleCandidate) {
   'use strict';
 
 
 
 
   /**
-   * The RegionOfInterest model module.
-   * @module model/RegionOfInterest
+   * The VehicleDetails model module.
+   * @module model/VehicleDetails
    * @version 2.0.1
    */
 
   /**
-   * Constructs a new <code>RegionOfInterest</code>.
-   * @alias module:model/RegionOfInterest
+   * Constructs a new <code>VehicleDetails</code>.
+   * @alias module:model/VehicleDetails
    * @class
    */
   var exports = function() {
@@ -63,48 +63,48 @@
   };
 
   /**
-   * Constructs a <code>RegionOfInterest</code> from a plain JavaScript object, optionally creating a new instance.
+   * Constructs a <code>VehicleDetails</code> from a plain JavaScript object, optionally creating a new instance.
    * Copies all relevant properties from <code>data</code> to <code>obj</code> if supplied or a new instance if not.
    * @param {Object} data The plain JavaScript object bearing properties of interest.
-   * @param {module:model/RegionOfInterest} obj Optional instance to populate.
-   * @return {module:model/RegionOfInterest} The populated <code>RegionOfInterest</code> instance.
+   * @param {module:model/VehicleDetails} obj Optional instance to populate.
+   * @return {module:model/VehicleDetails} The populated <code>VehicleDetails</code> instance.
    */
   exports.constructFromObject = function(data, obj) {
     if (data) {
       obj = obj || new exports();
 
-      if (data.hasOwnProperty('x')) {
-        obj['x'] = ApiClient.convertToType(data['x'], 'Integer');
+      if (data.hasOwnProperty('color')) {
+        obj['color'] = ApiClient.convertToType(data['color'], [VehicleCandidate]);
       }
-      if (data.hasOwnProperty('y')) {
-        obj['y'] = ApiClient.convertToType(data['y'], 'Integer');
+      if (data.hasOwnProperty('make')) {
+        obj['make'] = ApiClient.convertToType(data['make'], [VehicleCandidate]);
       }
-      if (data.hasOwnProperty('width')) {
-        obj['width'] = ApiClient.convertToType(data['width'], 'Integer');
+      if (data.hasOwnProperty('make_model')) {
+        obj['make_model'] = ApiClient.convertToType(data['make_model'], [VehicleCandidate]);
       }
-      if (data.hasOwnProperty('height')) {
-        obj['height'] = ApiClient.convertToType(data['height'], 'Integer');
+      if (data.hasOwnProperty('body_type')) {
+        obj['body_type'] = ApiClient.convertToType(data['body_type'], [VehicleCandidate]);
       }
     }
     return obj;
   }
 
   /**
-   * @member {Integer} x
+   * @member {Array.<module:model/VehicleCandidate>} color
    */
-  exports.prototype['x'] = undefined;
+  exports.prototype['color'] = undefined;
   /**
-   * @member {Integer} y
+   * @member {Array.<module:model/VehicleCandidate>} make
    */
-  exports.prototype['y'] = undefined;
+  exports.prototype['make'] = undefined;
   /**
-   * @member {Integer} width
+   * @member {Array.<module:model/VehicleCandidate>} make_model
    */
-  exports.prototype['width'] = undefined;
+  exports.prototype['make_model'] = undefined;
   /**
-   * @member {Integer} height
+   * @member {Array.<module:model/VehicleCandidate>} body_type
    */
-  exports.prototype['height'] = undefined;
+  exports.prototype['body_type'] = undefined;
 
 
 
