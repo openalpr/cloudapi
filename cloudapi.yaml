@@ -1,10 +1,10 @@
 swagger: '2.0'
 
 info:
-  version: "1.0.1"
+  version: "2.0.1"
   title: OpenALPR Cloud API
 host: api.openalpr.com
-basePath: /v1
+basePath: /v2
 schemes:
   - https
 produces:
@@ -14,207 +14,334 @@ paths:
   # Send an image to OpenALPR and get the analyzed results
   /recognize:
     post:
+      operationId: recognizeFile
       description: |
         Send an image for OpenALPR to analyze and provide metadata back
+        The image is sent as a file using a form data POST
       consumes: 
         - "multipart/form-data"
       produces:
         - application/json
       parameters:
         -
-          name: secret_key
-          in: query
-          description: |
-            The secret key used to authenticate your account.  You can view your 
-            secret key by visiting 
-            https://cloud.openalpr.com/
-          required: true
-          type: string
-        -
-          name: tasks
-          in: query
-          description: |
-            Tasks to execute.  You can choose to detect the license plate, 
-            as well as additional metadata about the vehicle.  Each additional 
-            option costs an API credit.
-          required: true
-          type: array
-          items: 
-            type: string
-            enum: [ "plate", "color", "make", "makemodel"]
-        -
           name: image
           in: formData
           description: |
             The image file that you wish to analyze
-            At least one value for image, image_bytes, or image_url must be provided
           required: true
           type: file
         -
-          name: image_bytes
-          in: query
-          description: |
-            The image file that you wish to analyze encoded in base64
-            At least one value for image, image_bytes, or image_url must be provided
-          required: false
-          type: string
+          $ref: "#/parameters/secret_key"
+        -
+          $ref: "#/parameters/recognize_vehicle"
+        -
+          $ref: "#/parameters/country"
+        -
+          $ref: "#/parameters/state"
+        -
+          $ref: "#/parameters/return_image"
+        -
+          $ref: "#/parameters/topn"
+        -
+          $ref: "#/parameters/prewarp"
+          
+      # Expected responses for this operation:
+      responses:
+        200:
+          $ref: '#/responses/api_200'
+
+        400:
+          $ref: '#/responses/api_400'
+        401:
+          $ref: '#/responses/api_401'
+        402:
+          $ref: '#/responses/api_402'
+        403:
+          $ref: '#/responses/api_403'
+
+  /recognize_url:
+    post:
+      operationId: recognizeUrl
+      description: |
+        Send an image for OpenALPR to analyze and provide metadata back
+        The image is sent as a URL.  The OpenALPR service will download the image 
+        and process it
+      consumes: 
+        - application/json
+      produces:
+        - application/json
+      parameters:
         -
           name: image_url
           in: query
           description: |
             A URL to an image that you wish to analyze
-            At least one value for image, image_bytes, or image_url must be provided
-          required: false
+          required: true
           type: string
         -
-          name: country
-          in: query
-          description: |
-            Defines the training data used by OpenALPR.  "us" analyzes 
-            North-American style plates.  "eu" analyzes European-style plates.
-            
-            This field is required if using the "plate" task
-            
-            You may use multiple datasets by using commas between the country 
-            codes.  For example, 'au,auwide' would analyze using both the 
-            Australian plate styles.  A full list of supported country codes 
-            can be found here
-            https://github.com/openalpr/openalpr/tree/master/runtime_data/config
-          required: false
-          type: string
+          $ref: "#/parameters/secret_key"
         -
-          name: state
-          in: query
-          description: |
-            Corresponds to a US state or EU country code used by OpenALPR pattern 
-            recognition.  For example, using "md" matches US plates against the 
-            Maryland plate patterns.  Using "fr" matches European plates against 
-            the French plate patterns.
-          required: false
-          type: string
+          $ref: "#/parameters/recognize_vehicle"
         -
-          name: return_image
-          in: query
-          description: |
-            If set to 1, the image you uploaded will be encoded in base64 and 
-            sent back along with the response
-          required: false
-          type: integer
-          enum: [0, 1]
+          $ref: "#/parameters/country"
         -
-          name: topn
-          in: query
-          description: |
-            The number of results you would like to be returned for plate 
-            candidates and vehicle classifications
-          required: false
-          type: integer
-          minimum: 1
-          maximum: 1000
+          $ref: "#/parameters/state"
         -
-          name: prewarp
-          in: query
-          description: |
-            Prewarp configuration is used to calibrate the analyses for the 
-            angle of a particular camera.  More information is available here
-            http://doc.openalpr.com/accuracy_improvements.html#calibration
-          required: false
-          type: string
+          $ref: "#/parameters/return_image"
+        -
+          $ref: "#/parameters/topn"
+        -
+          $ref: "#/parameters/prewarp"
           
       # Expected responses for this operation:
       responses:
-        # Response code
         200:
-          description: OK
-          headers:
-            X-RateLimit-Limit:
-              description: Maximum number of requests allowed from your IP in a period
-              type: integer
-            X-Ratelimit-Remaining:
-              description: Number of remaining requests allowed during this period
-              type: integer
-            X-Ratelimit-Reset:
-              description: Epoch time when the next period begins
-              type: integer
-          schema:
-            properties:
-              total_processing_time:
-                type: number
-                description: Time spent processing all tasks (in milliseconds)
-              img_width:
-                type: integer
-                description: Width of the uploaded image in pixels
-              img_height:
-                type: integer
-                description: Height of the input image in pixels
-              credit_cost:
-                type: integer
-                description: The number of API credits that were used to process this image
-              credits_monthly_used:
-                type: integer
-                description: The number of API credits used this month
-              credits_monthly_total:
-                type: integer
-                description: The maximum number of API credits available this month according to your plan
-              makemodel:
-                type: array
-                description: Results from makemodel vehicle analysis task
-                items:
-                  $ref: '#/definitions/classification'
-              make:
-                type: array
-                description: Results from make vehicle analysis task
-                items:
-                  $ref: '#/definitions/classification'
-              color:
-                type: array
-                description: Results from color vehicle analysis task
-                items:
-                  $ref: '#/definitions/classification'
-              plate:
-                $ref: '#/definitions/alpr_plate'
-
-                
-                  
+          $ref: '#/responses/api_200'
 
         400:
-          description: Parameter is invalid
-          schema:
-            properties:
-              error:
-                type: string
-                description: Text error message describing the invalid input
+          $ref: '#/responses/api_400'
         401:
-          description: User not authorized or invalid secret_key
-          schema:
-            properties:
-              error:
-                type: string
-                description: Text error message describing the invalid input
-          
+          $ref: '#/responses/api_401'
         402:
-          description: Monthly usage limit exceeded
-          schema:
-            properties:
-              error:
-                type: string
-                description: Text error message describing the invalid input
+          $ref: '#/responses/api_402'
         403:
-          description: Temporary rate-limit exceeded
+          $ref: '#/responses/api_403'
+
+  /recognize_bytes:
+    post:
+      operationId: recognizeBytes
+      description: |
+        Send an image for OpenALPR to analyze and provide metadata back
+        The image is sent as base64 encoded bytes.
+      consumes: 
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        -
+          name: image_bytes
+          in: body
+          description: |
+            The image file that you wish to analyze encoded in base64
+          required: true
           schema:
-            properties:
-              error:
-                type: string
-                description: Text error message describing the invalid input
+            type: string
           
+        -
+          $ref: "#/parameters/secret_key"
+        -
+          $ref: "#/parameters/recognize_vehicle"
+        -
+          $ref: "#/parameters/country"
+        -
+          $ref: "#/parameters/state"
+        -
+          $ref: "#/parameters/return_image"
+        -
+          $ref: "#/parameters/topn"
+        -
+          $ref: "#/parameters/prewarp"
+          
+      # Expected responses for this operation:
+      responses:
+        200:
+          $ref: '#/responses/api_200'
+
+        400:
+          $ref: '#/responses/api_400'
+        401:
+          $ref: '#/responses/api_401'
+        402:
+          $ref: '#/responses/api_402'
+        403:
+          $ref: '#/responses/api_403'
+
+parameters:
+  prewarp:
+    name: prewarp
+    in: query
+    description: |
+      Prewarp configuration is used to calibrate the analyses for the 
+      angle of a particular camera.  More information is available here
+      http://doc.openalpr.com/accuracy_improvements.html#calibration
+    required: false
+    default: ''
+    type: string
+    
+  topn:
+    name: topn
+    in: query
+    description: |
+      The number of results you would like to be returned for plate 
+      candidates and vehicle classifications
+    required: false
+    type: integer
+    default: 10
+    minimum: 1
+    maximum: 1000
+    
+  return_image:
+    name: return_image
+    in: query
+    description: |
+      If set to 1, the image you uploaded will be encoded in base64 and 
+      sent back along with the response
+    required: false
+    default: 0
+    type: integer
+    enum: [0, 1]
+
+  country:
+    name: country
+    in: query
+    description: |
+      Defines the training data used by OpenALPR.  "us" analyzes 
+      North-American style plates.  "eu" analyzes European-style plates.
+      
+      This field is required if using the "plate" task
+      
+      You may use multiple datasets by using commas between the country 
+      codes.  For example, 'au,auwide' would analyze using both the 
+      Australian plate styles.  A full list of supported country codes 
+      can be found here
+      https://github.com/openalpr/openalpr/tree/master/runtime_data/config
+    required: true
+    type: string
+
+  recognize_vehicle:
+    name: recognize_vehicle
+    in: query
+    description: |
+      If set to 1, the vehicle will also be recognized in the image
+      This requires an additional credit per request
+    required: false
+    type: integer
+    default: 0
+    enum: [0, 1]
+          
+  state:
+    name: state
+    in: query
+    description: |
+      Corresponds to a US state or EU country code used by OpenALPR pattern 
+      recognition.  For example, using "md" matches US plates against the 
+      Maryland plate patterns.  Using "fr" matches European plates against 
+      the French plate patterns.
+    required: false
+    default: ''
+    type: string
+    
+  secret_key:
+    name: secret_key
+    in: query
+    description: |
+      The secret key used to authenticate your account.  You can view your 
+      secret key by visiting 
+      https://cloud.openalpr.com/
+    required: true
+    type: string
+
+
+responses:
+
+  api_200:
+    description: OK
+    headers:
+      X-RateLimit-Limit:
+        description: Maximum number of requests allowed from your IP in a period
+        type: integer
+      X-Ratelimit-Remaining:
+        description: Number of remaining requests allowed during this period
+        type: integer
+      X-Ratelimit-Reset:
+        description: Epoch time when the next period begins
+        type: integer
+    schema:
+      properties:
+        processing_time:
+          type: object
+          properties:
+            total:
+              type: number
+              description: Time spent processing all tasks (in milliseconds)
+            plates:
+              type: number
+              description: Time spent performing license plate recognition (in milliseconds)
+            vehicles:
+              type: number
+              description: Time spent performing vehicle recognition (in milliseconds)
+              
+        img_width:
+          type: integer
+          description: Width of the uploaded image in pixels
+        img_height:
+          type: integer
+          description: Height of the input image in pixels
+        credit_cost:
+          type: integer
+          description: The number of API credits that were used to process this image
+        credits_monthly_used:
+          type: integer
+          description: The number of API credits used this month
+        credits_monthly_total:
+          type: integer
+          description: The maximum number of API credits available this month according to your plan
+          
+        results:
+          type: array
+          items:
+            $ref: '#/definitions/plate_details'
+        regions_of_interest:
+          type: array
+          description: Describes the areas analyzed in the input image
+          items:
+            $ref: '#/definitions/region_of_interest'
+        epoch_time:
+          # This is actually an integer, but setting to number to avoid issues with overflow
+          type: number
+          description: Epoch time that the image was processed in milliseconds
+        version:
+          type: integer
+          description: API format version
+        data_type:
+          type: string
+          enum: ["alpr_results", "alpr_group", "heartbeat"]
+          description: Specifies the type of data in this response
+
+
+
+  api_400:
+    description: Parameter is invalid
+    schema:
+      properties:
+        error:
+          type: string
+          description: Text error message describing the invalid input
+  api_401:
+    description: User not authorized or invalid secret_key
+    schema:
+      properties:
+        error:
+          type: string
+          description: Text error message describing the invalid input
+    
+  api_402:
+    description: Monthly usage limit exceeded
+    schema:
+      properties:
+        error:
+          type: string
+          description: Text error message describing the invalid input
+  api_403:
+    description: Temporary rate-limit exceeded
+    schema:
+      properties:
+        error:
+          type: string
+          description: Text error message describing the invalid input
+
+
 definitions:
-  classification:
-    type: object
-    properties:
-      confidence:
-        type: number
-      value:
-        type: string
 
   coordinate:
     type: object
@@ -248,6 +375,36 @@ definitions:
       matches_template:
         type: integer
         description: Indicates whether the plate matched a regional text pattern
+        
+  vehicle_candidate:
+    type: object
+    properties:
+      name: 
+        type: string
+        description: name of value
+      confidence:
+        type: number
+        description: confidence of value (percent)
+  
+  vehicle_details:
+    type: object
+    properties:
+      color:
+        type: array
+        items:
+          $ref: '#/definitions/vehicle_candidate'
+      make:
+        type: array
+        items:
+          $ref: '#/definitions/vehicle_candidate'
+      make_model:
+        type: array
+        items:
+          $ref: '#/definitions/vehicle_candidate'
+      body_type:
+        type: array
+        items:
+          $ref: '#/definitions/vehicle_candidate'
         
   plate_details:
     type: object
@@ -286,37 +443,9 @@ definitions:
         description: All the top N candidates that could be the correct plate number
         items:
           $ref: '#/definitions/plate_candidate'
+      vehicle_region:
+        $ref: '#/definitions/region_of_interest'
+      vehicle:
+        $ref: '#/definitions/vehicle_details'
           
-  alpr_plate:
-    description: Results from plate analysis task
-    type: object
-    properties:
-      results:
-        type: array
-        items:
-          $ref: '#/definitions/plate_details'
-      img_width:
-        type: integer
-        description: Width of the uploaded image in pixels
-      img_height:
-        type: integer
-        description: Height of the input image in pixels
-      regions_of_interest:
-        type: array
-        description: Describes the areas analyzed in the input image
-        items:
-          $ref: '#/definitions/region_of_interest'
-      epoch_time:
-        # This is actually an integer, but setting to number to avoid issues with overflow
-        type: number
-        description: Epoch time that the image was processed in milliseconds
-      version:
-        type: integer
-        description: API format version
-      data_type:
-        type: string
-        enum: ["alpr_results", "alpr_group", "heartbeat"]
-        description: Specifies the type of data in this response
-      processing_time_ms:
-        type: number
-        description: Number of milliseconds to process all license plates
+
