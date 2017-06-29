@@ -60,7 +60,7 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 import com.openalpr.api.invoker.*;
 import com.openalpr.api.invoker.auth.*;
-import com.openalpr.api.invoker.model.*;
+import com.openalpr.api.models.*;
 import com.openalpr.api.DefaultApi;
 
 import java.io.File;
@@ -122,7 +122,7 @@ Authentication schemes defined for the API:
 
 ## Recommendation
 
-It's recommended to create an instance of `ApiClient` per thread in a multithreaded environment to avoid any potential issue.
+It's recommended to create an instance of `ApiClient` per thread in a multithreaded environment to avoid any potential issues.
 
 ## Author
 
