@@ -5,8 +5,7 @@
  *
  * @category Class
  * @package  {{invokerPackage}}
- * @author   http://github.com/swagger-api/swagger-codegen
- * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache Licene v2
+ * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
 
@@ -19,9 +18,9 @@
 
 namespace {{apiPackage}};
 
-use \{{invokerPackage}}\Configuration;
 use \{{invokerPackage}}\ApiClient;
 use \{{invokerPackage}}\ApiException;
+use \{{invokerPackage}}\Configuration;
 use \{{invokerPackage}}\ObjectSerializer;
 
 /**
@@ -29,13 +28,11 @@ use \{{invokerPackage}}\ObjectSerializer;
  *
  * @category Class
  * @package  {{invokerPackage}}
- * @author   http://github.com/swagger-api/swagger-codegen
- * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache Licene v2
+ * @author   Swagger Codegen team
  * @link     https://github.com/swagger-api/swagger-codegen
  */
 {{#operations}}class {{classname}}
 {
-
     /**
      * API Client
      *
@@ -50,9 +47,8 @@ use \{{invokerPackage}}\ObjectSerializer;
      */
     public function __construct(\{{invokerPackage}}\ApiClient $apiClient = null)
     {
-        if ($apiClient == null) {
+        if ($apiClient === null) {
             $apiClient = new ApiClient();
-            $apiClient->getConfig()->setHost('{{basePath}}');
         }
 
         $this->apiClient = $apiClient;
@@ -80,12 +76,14 @@ use \{{invokerPackage}}\ObjectSerializer;
         $this->apiClient = $apiClient;
         return $this;
     }
-
     {{#operation}}
+
     /**
      * Operation {{{operationId}}}
+{{#summary}}
      *
      * {{{summary}}}
+{{/summary}}
      *
 {{#description}}
      * {{.}}
@@ -94,10 +92,10 @@ use \{{invokerPackage}}\ObjectSerializer;
 {{#allParams}}
      * @param {{dataType}} ${{paramName}} {{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
 {{/allParams}}
-     * @return {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
      * @throws \{{invokerPackage}}\ApiException on non-2xx response
+     * @return {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
      */
-    public function {{operationId}}({{#allParams}}${{paramName}}{{^required}} = null{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}})
+    public function {{operationId}}({{#allParams}}${{paramName}}{{^required}} = {{#defaultValue}}'{{{.}}}'{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}})
     {
         list($response) = $this->{{operationId}}WithHttpInfo({{#allParams}}${{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}});
         return $response;
@@ -105,8 +103,10 @@ use \{{invokerPackage}}\ObjectSerializer;
 
     /**
      * Operation {{{operationId}}}WithHttpInfo
+{{#summary}}
      *
      * {{{summary}}}
+{{/summary}}
      *
 {{#description}}
      * {{.}}
@@ -114,11 +114,11 @@ use \{{invokerPackage}}\ObjectSerializer;
 {{/description}}
 {{#allParams}}
      * @param {{dataType}} ${{paramName}} {{description}} {{#required}}(required){{/required}}{{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
-{{/allParams}}   
-     * @return Array of {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}null{{/returnType}}, HTTP status code, HTTP response headers (array of strings)
+{{/allParams}}
      * @throws \{{invokerPackage}}\ApiException on non-2xx response
+     * @return array of {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}null{{/returnType}}, HTTP status code, HTTP response headers (array of strings)
      */
-    public function {{operationId}}WithHttpInfo({{#allParams}}${{paramName}}{{^required}} = null{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}})
+    public function {{operationId}}WithHttpInfo({{#allParams}}${{paramName}}{{^required}} = {{#defaultValue}}'{{{.}}}'{{/defaultValue}}{{^defaultValue}}null{{/defaultValue}}{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}})
     {
         {{#allParams}}
         {{#required}}
@@ -139,34 +139,44 @@ use \{{invokerPackage}}\ObjectSerializer;
         }
         {{/minLength}}
         {{#maximum}}
-        if ({{^required}}!is_null(${{paramName}}) && {{/required}}(${{paramName}} > {{maximum}})) {
-            throw new \InvalidArgumentException('invalid value for "${{paramName}}" when calling {{classname}}.{{operationId}}, must be smaller than or equal to {{maximum}}.');
+        if ({{^required}}!is_null(${{paramName}}) && {{/required}}(${{paramName}} >{{#exclusiveMaximum}}={{/exclusiveMaximum}} {{maximum}})) {
+            throw new \InvalidArgumentException('invalid value for "${{paramName}}" when calling {{classname}}.{{operationId}}, must be smaller than {{^exclusiveMaximum}}or equal to {{/exclusiveMaximum}}{{maximum}}.');
         }
         {{/maximum}}
         {{#minimum}}
-        if ({{^required}}!is_null(${{paramName}}) && {{/required}}(${{paramName}} < {{minimum}})) {
-            throw new \InvalidArgumentException('invalid value for "${{paramName}}" when calling {{classname}}.{{operationId}}, must be bigger than or equal to {{minimum}}.');
+        if ({{^required}}!is_null(${{paramName}}) && {{/required}}(${{paramName}} <{{#exclusiveMinimum}}={{/exclusiveMinimum}} {{minimum}})) {
+            throw new \InvalidArgumentException('invalid value for "${{paramName}}" when calling {{classname}}.{{operationId}}, must be bigger than {{^exclusiveMinimum}}or equal to {{/exclusiveMinimum}}{{minimum}}.');
         }
         {{/minimum}}
         {{#pattern}}
-        if ({{^required}}!is_null(${{paramName}}) && {{/required}}!preg_match("{{pattern}}", ${{paramName}})) {
-            throw new \InvalidArgumentException('invalid value for "{{paramName}}" when calling {{classname}}.{{operationId}}, must conform to the pattern {{pattern}}.');
+        if ({{^required}}!is_null(${{paramName}}) && {{/required}}!preg_match("{{{pattern}}}", ${{paramName}})) {
+            throw new \InvalidArgumentException("invalid value for \"{{paramName}}\" when calling {{classname}}.{{operationId}}, must conform to the pattern {{{pattern}}}.");
         }
         {{/pattern}}
+        {{#maxItems}}
+        if ({{^required}}!is_null(${{paramName}}) && {{/required}}(count(${{paramName}}) > {{maxItems}})) {
+            throw new \InvalidArgumentException('invalid value for "${{paramName}}" when calling {{classname}}.{{operationId}}, number of items must be less than or equal to {{maxItems}}.');
+        }
+        {{/maxItems}}
+        {{#minItems}}
+        if ({{^required}}!is_null(${{paramName}}) && {{/required}}(count(${{paramName}}) < {{minItems}})) {
+            throw new \InvalidArgumentException('invalid value for "${{paramName}}" when calling {{classname}}.{{operationId}}, number of items must be greater than or equal to {{minItems}}.');
+        }
+        {{/minItems}}
 
         {{/hasValidation}}
         {{/allParams}}
         // parse inputs
-        $resourcePath = "{{path}}";
+        $resourcePath = "{{{path}}}";
         $httpBody = '';
-        $queryParams = array();
-        $headerParams = array();
-        $formParams = array();
-        $_header_accept = $this->apiClient->selectHeaderAccept(array({{#produces}}'{{{mediaType}}}'{{#hasMore}}, {{/hasMore}}{{/produces}}));
+        $queryParams = [];
+        $headerParams = [];
+        $formParams = [];
+        $_header_accept = $this->apiClient->selectHeaderAccept([{{#produces}}'{{{mediaType}}}'{{#hasMore}}, {{/hasMore}}{{/produces}}]);
         if (!is_null($_header_accept)) {
             $headerParams['Accept'] = $_header_accept;
         }
-        $headerParams['Content-Type'] = $this->apiClient->selectHeaderContentType(array({{#consumes}}'{{{mediaType}}}'{{#hasMore}},{{/hasMore}}{{/consumes}}));
+        $headerParams['Content-Type'] = $this->apiClient->selectHeaderContentType([{{#consumes}}'{{{mediaType}}}'{{#hasMore}}, {{/hasMore}}{{/consumes}}]);
 
         {{#queryParams}}
         // query params
@@ -205,9 +215,6 @@ use \{{invokerPackage}}\ObjectSerializer;
             );
         }
         {{/pathParams}}
-        // default format to json
-        $resourcePath = str_replace("{format}", "json", $resourcePath);
-
         {{#formParams}}
         // form params
         if (${{paramName}} !== null) {
@@ -225,7 +232,8 @@ use \{{invokerPackage}}\ObjectSerializer;
             {{/isFile}}
         }
         {{/formParams}}
-        {{#bodyParams}}// body params
+        {{#bodyParams}}
+        // body params
         $_tempBody = null;
         if (isset(${{paramName}})) {
             $_tempBody = ${{paramName}};
@@ -273,14 +281,14 @@ use \{{invokerPackage}}\ObjectSerializer;
                 {{^returnType}}
                 null,
                 {{/returnType}}
-                '{{path}}'
+                '{{{path}}}'
             );
 
             {{#returnType}}
-            return array($this->apiClient->getSerializer()->deserialize($response, '{{returnType}}', $httpHeader{{#discriminator}}, '{{discriminator}}'{{/discriminator}}), $statusCode, $httpHeader);
+            return [$this->apiClient->getSerializer()->deserialize($response, '{{returnType}}', $httpHeader), $statusCode, $httpHeader];
             {{/returnType}}
             {{^returnType}}
-            return array(null, $statusCode, $httpHeader);
+            return [null, $statusCode, $httpHeader];
             {{/returnType}}
         } catch (ApiException $e) {
             switch ($e->getCode()) {
@@ -297,7 +305,6 @@ use \{{invokerPackage}}\ObjectSerializer;
             throw $e;
         }
     }
-
     {{/operation}}
 }
 {{/operations}}

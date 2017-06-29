@@ -10,9 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.mustache.Mustache.Compiler;
+
 public interface CodegenConfig {
     CodegenType getTag();
-
+    
     String getName();
 
     String getHelp();
@@ -77,6 +79,10 @@ public interface CodegenConfig {
 
     List<SupportingFile> supportingFiles();
 
+    String getInputSpec();
+
+    void setInputSpec(String inputSpec);
+
     String getOutputDir();
 
     void setOutputDir(String dir);
@@ -112,10 +118,14 @@ public interface CodegenConfig {
     Map<String, String> modelDocTemplateFiles();
 
     Set<String> languageSpecificPrimitives();
+    
+    Map<String, String> reservedWordsMappings();
 
     void preprocessSwagger(Swagger swagger);
 
     void processSwagger(Swagger swagger);
+
+    Compiler processCompiler(Compiler compiler);
 
     String sanitizeTag(String tag);
 
@@ -161,6 +171,10 @@ public interface CodegenConfig {
 
     void setSkipOverwrite(boolean skipOverwrite);
 
+    boolean isRemoveOperationIdPrefix();
+
+    void setRemoveOperationIdPrefix(boolean removeOperationIdPrefix);
+
     Map<String, String> supportedLibraries();
 
     void setLibrary(String library);
@@ -189,4 +203,8 @@ public interface CodegenConfig {
     String getHttpUserAgent();
 
     String getCommonTemplateDir();
+
+    void setIgnoreFilePathOverride(String ignoreFileOverride);
+
+    String getIgnoreFilePathOverride();
 }

@@ -1,9 +1,14 @@
 package io.swagger.codegen.languages;
 
 import io.swagger.codegen.CliOption;
+import io.swagger.codegen.CodegenModel;
+import io.swagger.codegen.CodegenProperty;
 import io.swagger.codegen.SupportingFile;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
 public class TypeScriptFetchClientCodegen extends AbstractTypeScriptClientCodegen {
 
@@ -35,6 +40,7 @@ public class TypeScriptFetchClientCodegen extends AbstractTypeScriptClientCodege
         supportingFiles.add(new SupportingFile("package.json.mustache", "", "package.json"));
         supportingFiles.add(new SupportingFile("typings.json.mustache", "", "typings.json"));
         supportingFiles.add(new SupportingFile("tsconfig.json.mustache", "", "tsconfig.json"));
+        supportingFiles.add(new SupportingFile("tslint.json.mustache", "", "tslint.json"));
         supportingFiles.add(new SupportingFile("gitignore", "", ".gitignore"));
 
         if(additionalProperties.containsKey(NPM_NAME)) {
@@ -70,6 +76,26 @@ public class TypeScriptFetchClientCodegen extends AbstractTypeScriptClientCodege
 
     public void setNpmVersion(String npmVersion) {
         this.npmVersion = npmVersion;
+    }
+
+    @Override
+    public Map<String, Object> postProcessModels(Map<String, Object> objs) {
+        // process enum in models
+        List<Object> models = (List<Object>) postProcessModelsEnum(objs).get("models");
+        for (Object _mo : models) {
+            Map<String, Object> mo = (Map<String, Object>) _mo;
+            CodegenModel cm = (CodegenModel) mo.get("model");
+            cm.imports = new TreeSet(cm.imports);
+            for (CodegenProperty var : cm.vars) {
+                // name enum with model name, e.g. StatuEnum => PetStatusEnum
+                if (Boolean.TRUE.equals(var.isEnum)) {
+                    var.datatypeWithEnum = var.datatypeWithEnum.replace(var.enumName, cm.classname + var.enumName);
+                    var.enumName = cm.classname + var.enumName;
+                }
+            }
+        }
+
+        return objs;
     }
 
 }

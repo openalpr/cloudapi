@@ -19,6 +19,7 @@ Method | HTTP request | Description
 
 ### Example 
 ```python
+from __future__ import print_function
 import time
 import {{{packageName}}}
 from {{{packageName}}}.rest import ApiException
@@ -45,14 +46,14 @@ try:
 {{/summary}}    {{#returnType}}api_response = {{/returnType}}api_instance.{{{operationId}}}({{#allParams}}{{#required}}{{paramName}}{{/required}}{{^required}}{{paramName}}={{paramName}}{{/required}}{{#hasMore}}, {{/hasMore}}{{/allParams}}){{#returnType}}
     pprint(api_response){{/returnType}}
 except ApiException as e:
-    print "Exception when calling {{classname}}->{{operationId}}: %s\n" % e
+    print("Exception when calling {{classname}}->{{operationId}}: %s\n" % e)
 ```
 
 ### Parameters
 {{^allParams}}This endpoint does not need any parameter.{{/allParams}}{{#allParams}}{{#-last}}
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------{{/-last}}{{/allParams}}
-{{#allParams}} **{{paramName}}** | {{#isFile}}**{{dataType}}**{{/isFile}}{{#isPrimitiveType}}**{{dataType}}**{{/isPrimitiveType}}{{^isPrimitiveType}}{{^isFile}}[**{{dataType}}**]({{baseType}}.md){{/isFile}}{{/isPrimitiveType}}| {{description}} | {{^required}}[optional] {{/required}}{{#defaultValue}}[default to {{defaultValue}}]{{/defaultValue}}
+{{#allParams}} **{{paramName}}** | {{#isFile}}**{{dataType}}**{{/isFile}}{{^isFile}}{{#isPrimitiveType}}**{{dataType}}**{{/isPrimitiveType}}{{^isPrimitiveType}}[**{{dataType}}**]({{baseType}}.md){{/isPrimitiveType}}{{/isFile}}| {{description}} | {{^required}}[optional] {{/required}}{{#defaultValue}}[default to {{defaultValue}}]{{/defaultValue}}
 {{/allParams}}
 
 ### Return type

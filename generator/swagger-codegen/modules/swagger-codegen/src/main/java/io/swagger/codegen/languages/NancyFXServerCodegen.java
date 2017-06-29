@@ -1,29 +1,18 @@
 package io.swagger.codegen.languages;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static io.swagger.codegen.CodegenConstants.OPTIONAL_PROJECT_FILE;
-import static io.swagger.codegen.CodegenConstants.OPTIONAL_PROJECT_FILE_DESC;
-import static io.swagger.codegen.CodegenConstants.PACKAGE_NAME;
-import static io.swagger.codegen.CodegenConstants.PACKAGE_VERSION;
-import static io.swagger.codegen.CodegenConstants.RETURN_ICOLLECTION;
-import static io.swagger.codegen.CodegenConstants.RETURN_ICOLLECTION_DESC;
-import static io.swagger.codegen.CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG;
-import static io.swagger.codegen.CodegenConstants.SORT_PARAMS_BY_REQUIRED_FLAG_DESC;
-import static io.swagger.codegen.CodegenConstants.SOURCE_FOLDER;
-import static io.swagger.codegen.CodegenConstants.SOURCE_FOLDER_DESC;
-import static io.swagger.codegen.CodegenConstants.USE_COLLECTION;
-import static io.swagger.codegen.CodegenConstants.USE_COLLECTION_DESC;
-import static io.swagger.codegen.CodegenConstants.USE_DATETIME_OFFSET;
-import static io.swagger.codegen.CodegenConstants.USE_DATETIME_OFFSET_DESC;
+import static io.swagger.codegen.CodegenConstants.*;
 import static io.swagger.codegen.CodegenType.SERVER;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.StringUtils.capitalize;
+
 import io.swagger.codegen.CodegenModel;
 import io.swagger.codegen.CodegenOperation;
 import io.swagger.codegen.CodegenProperty;
 import io.swagger.codegen.CodegenType;
 import io.swagger.codegen.SupportingFile;
+import io.swagger.codegen.utils.ModelUtils;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
@@ -55,11 +44,12 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
     private static final String API_NAMESPACE = "Modules";
     private static final String MODEL_NAMESPACE = "Models";
     private static final String IMMUTABLE_OPTION = "immutable";
+    private static final String USE_BASE_PATH = "writeModulePath";
 
     private static final Map<String, Predicate<Property>> propertyToSwaggerTypeMapping =
             createPropertyToSwaggerTypeMapping();
 
-    private final String packageGuid = "{" + randomUUID().toString().toUpperCase() + "}";
+    private String packageGuid = "{" + randomUUID().toString().toUpperCase() + "}";
 
     private final Map<String, DependencyInfo> dependencies = new HashMap<>();
     private final Set<String> parentModels = new HashSet<>();
@@ -69,6 +59,9 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
     public NancyFXServerCodegen() {
         outputFolder = "generated-code" + File.separator + getName();
         apiTemplateFiles.put("api.mustache", ".cs");
+
+        // Early versions use no prefix for interfaces. Defaulting to I- common practice would break existing users.
+        setInterfacePrefix("");
 
         // contextually reserved words
         setReservedWordsLowerCase(
@@ -81,6 +74,8 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
         addOption(PACKAGE_NAME, "C# package name (convention: Title.Case).", packageName);
         addOption(PACKAGE_VERSION, "C# package version.", packageVersion);
         addOption(SOURCE_FOLDER, SOURCE_FOLDER_DESC, sourceFolder);
+        addOption(INTERFACE_PREFIX, INTERFACE_PREFIX_DESC, interfacePrefix);
+        addOption(OPTIONAL_PROJECT_GUID,OPTIONAL_PROJECT_GUID_DESC, null);
 
         // CLI Switches
         addSwitch(SORT_PARAMS_BY_REQUIRED_FLAG, SORT_PARAMS_BY_REQUIRED_FLAG_DESC, sortParamsByRequiredFlag);
@@ -89,6 +84,7 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
         addSwitch(USE_COLLECTION, USE_COLLECTION_DESC, useCollection);
         addSwitch(RETURN_ICOLLECTION, RETURN_ICOLLECTION_DESC, returnICollection);
         addSwitch(IMMUTABLE_OPTION, "Enabled by default. If disabled generates model classes with setters", true);
+        addSwitch(USE_BASE_PATH, "Enabled by default. If disabled, module paths will not mirror api base path", true);
         typeMapping.putAll(nodaTimeTypesMappings());
         languageSpecificPrimitives.addAll(nodaTimePrimitiveTypes());
 
@@ -125,6 +121,11 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
             supportingFiles.add(new SupportingFile("Solution.mustache", "", packageName + ".sln"));
             supportingFiles.add(new SupportingFile("Project.mustache", sourceFolder(), packageName + ".csproj"));
         }
+        
+        if (additionalProperties.containsKey(OPTIONAL_PROJECT_GUID)) {
+            setPackageGuid((String) additionalProperties.get(OPTIONAL_PROJECT_GUID));
+        }
+
         additionalProperties.put("packageGuid", packageGuid);
 
         setupModelTemplate();
@@ -193,6 +194,10 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
         return sourceFolder() + File.separator + fileName;
     }
 
+    public void setPackageGuid(String packageGuid) {
+        this.packageGuid = packageGuid;
+    }
+    
     @Override
     public String apiFileFolder() {
         return outputFolder + File.separator + sourceFolder() + File.separator + API_NAMESPACE;
@@ -224,34 +229,13 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
     private void postProcessParentModels(final Map<String, Object> models) {
         log.debug("Processing parents:  " + parentModels);
         for (final String parent : parentModels) {
-            final CodegenModel parentModel = modelByName(parent, models);
+            final CodegenModel parentModel = ModelUtils.getModelByName(parent, models);
             parentModel.hasChildren = true;
             final Collection<CodegenModel> childrenModels = childrenByParent.get(parent);
             for (final CodegenModel child : childrenModels) {
                 processParentPropertiesInChildModel(parentModel, child);
             }
         }
-    }
-
-    private CodegenModel modelByName(final String name, final Map<String, Object> models) {
-        final Object data = models.get(name);
-        if (data instanceof Map) {
-            final Map<?, ?> dataMap = (Map<?, ?>) data;
-            final Object dataModels = dataMap.get("models");
-            if (dataModels instanceof List) {
-                final List<?> dataModelsList = (List<?>) dataModels;
-                for (final Object entry : dataModelsList) {
-                    if (entry instanceof Map) {
-                        final Map<?, ?> entryMap = (Map<?, ?>) entry;
-                        final Object model = entryMap.get("model");
-                        if (model instanceof CodegenModel) {
-                            return (CodegenModel) model;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private void processParentPropertiesInChildModel(final CodegenModel parent, final CodegenModel child) {
@@ -290,6 +274,10 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
 
     @Override
     public String toEnumVarName(final String name, final String datatype) {
+        if (name.length() == 0) {
+            return "Empty";
+        }
+
         final String enumName = camelize(
                 sanitizeName(name)
                 .replaceFirst("^_", "")
@@ -348,7 +336,8 @@ public class NancyFXServerCodegen extends AbstractCSharpCodegen {
     @Override
     public void preprocessSwagger(final Swagger swagger) {
         additionalProperties.put("packageContext", sanitizeName(swagger.getBasePath()));
-        additionalProperties.put("baseContext", swagger.getBasePath());
+        final Object basePathOption = additionalProperties.get(USE_BASE_PATH);
+        additionalProperties.put("baseContext", basePathOption == null ? swagger.getBasePath() : "/");
     }
 
     @Override

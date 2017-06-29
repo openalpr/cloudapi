@@ -3,19 +3,14 @@
 {{>partial_header}}
 
 from __future__ import absolute_import
-import base64
-import urllib3
 
-try:
-    import httplib
-except ImportError:
-    # for python3
-    import http.client as httplib
+import urllib3
 
 import sys
 import logging
 
 from six import iteritems
+from six.moves import http_client as httplib
 
 
 def singleton(cls, *args, **kw):
@@ -41,7 +36,7 @@ class Configuration(object):
         Constructor
         """
         # Default Base url
-        self.host = "{{basePath}}"
+        self.host = "{{{basePath}}}"
         # Default api client
         self.api_client = None
         # Temp file folder for downloading files
@@ -84,6 +79,11 @@ class Configuration(object):
         self.cert_file = None
         # client key file
         self.key_file = None
+
+        # Proxy URL
+        self.proxy = None
+        # Safe chars for path_param
+        self.safe_chars_for_path_param = ''
 
     @property
     def logger_file(self):
@@ -220,7 +220,7 @@ class Configuration(object):
                     'value': self.get_basic_auth_token()
                 },
 {{/isBasic}}{{#isOAuth}}
-            '{{name}}': 
+            '{{name}}':
                 {
                     'type': 'oauth2',
                     'in': 'header',

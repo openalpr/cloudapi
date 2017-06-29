@@ -3,10 +3,13 @@ package io.swagger.codegen.languages;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import io.swagger.codegen.CliOption;
 import io.swagger.codegen.CodegenModel;
 import io.swagger.codegen.CodegenParameter;
+import io.swagger.codegen.CodegenOperation;
 import io.swagger.codegen.SupportingFile;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.properties.ArrayProperty;
@@ -23,6 +26,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     public static final String NPM_VERSION = "npmVersion";
     public static final String NPM_REPOSITORY = "npmRepository";
     public static final String SNAPSHOT = "snapshot";
+    public static final String WITH_INTERFACES = "withInterfaces";
 
     protected String npmName = null;
     protected String npmVersion = "1.0.0";
@@ -44,6 +48,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
         this.cliOptions.add(new CliOption(NPM_VERSION, "The version of your npm package"));
         this.cliOptions.add(new CliOption(NPM_REPOSITORY, "Use this property to set an url your private npmRepo in the package.json"));
         this.cliOptions.add(new CliOption(SNAPSHOT, "When setting this property to true the version will be suffixed with -SNAPSHOT.yyyyMMddHHmm", BooleanProperty.TYPE).defaultValue(Boolean.FALSE.toString()));
+        this.cliOptions.add(new CliOption(WITH_INTERFACES, "Setting this property to true will generate interfaces next to the default class implementations.", BooleanProperty.TYPE).defaultValue(Boolean.FALSE.toString()));
     }
 
     @Override
@@ -68,11 +73,20 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
         supportingFiles.add(new SupportingFile("models.mustache", modelPackage().replace('.', File.separatorChar), "models.ts"));
         supportingFiles.add(new SupportingFile("apis.mustache", apiPackage().replace('.', File.separatorChar), "api.ts"));
         supportingFiles.add(new SupportingFile("index.mustache", getIndexDirectory(), "index.ts"));
+        supportingFiles.add(new SupportingFile("configuration.mustache", getIndexDirectory(), "configuration.ts"));
+        supportingFiles.add(new SupportingFile("variables.mustache", getIndexDirectory(), "variables.ts"));
         supportingFiles.add(new SupportingFile("gitignore", "", ".gitignore"));
         supportingFiles.add(new SupportingFile("git_push.sh.mustache", "", "git_push.sh"));
 
         if(additionalProperties.containsKey(NPM_NAME)) {
             addNpmPackageGeneration();
+        }
+
+        if(additionalProperties.containsKey(WITH_INTERFACES)) {
+            boolean withInterfaces = Boolean.parseBoolean(additionalProperties.get(WITH_INTERFACES).toString());
+            if (withInterfaces) {
+                apiTemplateFiles.put("apiInterface.mustache", "Interface.ts");
+            }
         }
     }
 
@@ -127,7 +141,7 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     @Override
     public String getSwaggerType(Property p) {
         String swaggerType = super.getSwaggerType(p);
-        if(languageSpecificPrimitives.contains(swaggerType)) {
+        if(isLanguagePrimitive(swaggerType) || isLanguageGenericType(swaggerType)) {
             return swaggerType;
         }
         return addModelPrefix(swaggerType);
@@ -141,15 +155,19 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
             type = swaggerType;
         }
 
-        if (!startsWithLanguageSpecificPrimitiv(type)) {
+        if (!isLanguagePrimitive(type) && !isLanguageGenericType(type)) {
             type = "models." + swaggerType;
         }
         return type;
     }
 
-    private boolean startsWithLanguageSpecificPrimitiv(String type) {
-        for (String langPrimitive:languageSpecificPrimitives) {
-            if (type.startsWith(langPrimitive))  {
+    private boolean isLanguagePrimitive(String type) {
+        return languageSpecificPrimitives.contains(type);
+    }
+
+    private boolean isLanguageGenericType(String type) {
+        for (String genericType: languageGenericTypes) {
+            if (type.startsWith(genericType + "<"))  {
                 return true;
             }
         }
@@ -160,6 +178,46 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     public void postProcessParameter(CodegenParameter parameter) {
         super.postProcessParameter(parameter);
         parameter.dataType = addModelPrefix(parameter.dataType);
+    }
+
+    @Override
+    public Map<String, Object> postProcessOperations(Map<String, Object> operations) {
+        Map<String, Object> objs = (Map<String, Object>) operations.get("operations");
+        List<CodegenOperation> ops = (List<CodegenOperation>) objs.get("operation");
+        for (CodegenOperation op : ops) {
+            // Convert httpMethod to Angular's RequestMethod enum
+            // https://angular.io/docs/ts/latest/api/http/index/RequestMethod-enum.html
+            switch (op.httpMethod) {
+                case "GET":
+                    op.httpMethod = "RequestMethod.Get";
+                    break;
+                case "POST":
+                    op.httpMethod = "RequestMethod.Post";
+                    break;
+                case "PUT":
+                    op.httpMethod = "RequestMethod.Put";
+                    break;
+                case "DELETE":
+                    op.httpMethod = "RequestMethod.Delete";
+                    break;
+                case "OPTIONS":
+                    op.httpMethod = "RequestMethod.Options";
+                    break;
+                case "HEAD":
+                    op.httpMethod = "RequestMethod.Head";
+                    break;
+                case "PATCH":
+                    op.httpMethod = "RequestMethod.Patch";
+                    break;
+                default:
+                    throw new RuntimeException("Unknown HTTP Method " + op.httpMethod + " not allowed");
+            }
+
+            // Convert path to TypeScript template string
+            op.path = op.path.replaceAll("\\{(.*?)\\}", "\\$\\{$1\\}");
+        }
+
+        return operations;
     }
 
     public String getNpmName() {
@@ -185,4 +243,5 @@ public class TypeScriptAngular2ClientCodegen extends AbstractTypeScriptClientCod
     public void setNpmRepository(String npmRepository) {
         this.npmRepository = npmRepository;
     }
+
 }

@@ -14,7 +14,7 @@ class {{classname}}(client: TransportClient, config: SwaggerConfig) extends ApiC
       {{/required}}{{#required}}{{paramName}}: {{dataType}}{{#defaultValue}} = {{{defaultValue}}}{{/defaultValue}}{{#hasMore}},
       {{/hasMore}}{{/required}}{{/allParams}})(implicit reader: ClientResponseReader[{{#returnType}}{{returnType}}{{/returnType}}{{^returnType}}Unit{{/returnType}}]{{#bodyParams}}, writer: RequestWriter[{{dataType}}]{{/bodyParams}}){{#returnType}}: Future[{{returnType}}]{{/returnType}}{{^returnType}}: Future[Unit]{{/returnType}} = {
     // create path and map variables
-    val path = (addFmt("{{path}}"){{#pathParams}}
+    val path = (addFmt("{{{path}}}"){{#pathParams}}
         replaceAll ("\\{" + "{{baseName}}" + "\\}",{{paramName}}.toString){{/pathParams}})
 
     // query params
@@ -25,23 +25,34 @@ class {{classname}}(client: TransportClient, config: SwaggerConfig) extends ApiC
     {{#required}}
     {{^isPrimitiveType}}
     if ({{paramName}} == null) throw new Exception("Missing required parameter '{{paramName}}' when calling {{classname}}->{{operationId}}")
-
     {{/isPrimitiveType}}
+    {{#isString}}
+    if ({{paramName}} == null) throw new Exception("Missing required parameter '{{paramName}}' when calling {{classname}}->{{operationId}}")
+
+    {{/isString}}
     {{/required}}
     {{/allParams}}
     {{#queryParams}}
     {{^required}}
-    if ({{paramName}} != null) {{paramName}}.foreach { v => queryParams += "{{baseName}}" -> v.toString }
-
+    {{paramName}} match {
+    case Some(param) => queryParams += "{{baseName}}" -> param.toString
+    case _ => queryParams
+    }
     {{/required}}
     {{#required}}
-    if ({{paramName}} != null) queryParams += "{{baseName}}" -> {{paramName}}.toString
-
+    queryParams += "{{baseName}}" -> {{paramName}}.toString
     {{/required}}
     {{/queryParams}}
-
     {{#headerParams}}
+    {{^required}}
+    {{paramName}} match {
+    case Some(param) => headerParams += "{{baseName}}" -> param.toString
+    case _ => headerParams
+    }
+    {{/required}}
+    {{#required}}
     headerParams += "{{baseName}}" -> {{paramName}}.toString
+    {{/required}}
     {{/headerParams}}
 
     val resFuture = client.submit("{{httpMethod}}", path, queryParams.toMap, headerParams.toMap, {{#bodyParam}}writer.write({{paramName}}){{/bodyParam}}{{^bodyParam}}"{{emptyBodyParam}}"{{/bodyParam}})

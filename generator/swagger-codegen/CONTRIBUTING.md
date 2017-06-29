@@ -4,7 +4,8 @@
 
  - If you're not using the latest master to generate API clients or server stubs, please give it another try by pulling the latest master as the issue may have already been addressed. Ref: [Getting Started](https://github.com/swagger-api/swagger-codegen#getting-started)
  - Search the [open issue](https://github.com/swagger-api/swagger-codegen/issues) and [closed issue](https://github.com/swagger-api/swagger-codegen/issues?q=is%3Aissue+is%3Aclosed) to ensure no one else has reported something similar before.
- - File an [issue ticket](https://github.com/swagger-api/swagger-codegen/issues/new) by providing all the required information. 
+ - File an [issue ticket](https://github.com/swagger-api/swagger-codegen/issues/new) by providing all the required information.
+ - Test with the latest master by building the JAR locally to see if the issue has already been addressed.
  - You can also make a suggestion or ask a question by opening an "issue".
 
 ## Before submitting a PR
@@ -14,6 +15,12 @@
  - It's recommended to **create a new git branch** for the change so that the merge commit message looks nicer in the commit history.
 
 ## How to contribute
+
+### git
+
+If you're new to git, you may find the following FAQs useful:
+
+https://github.com/swagger-api/swagger-codegen/wiki/FAQ#git
 
 ### Code generators
 
@@ -27,13 +34,17 @@ For a list of variables available in the template, please refer to this [page](h
 
 
 ### Style guide
-Code change should conform to the programming style guide of the respective langauages:
+Code change should conform to the programming style guide of the respective languages:
 - Android: https://source.android.com/source/code-style.html
+- Bash: https://github.com/bahamas10/bash-style-guide
 - C#: https://msdn.microsoft.com/en-us/library/vstudio/ff926074.aspx
 - C++: https://google.github.io/styleguide/cppguide.html
+- Clojure: https://github.com/bbatsov/clojure-style-guide
+- Elixir: https://github.com/christopheradams/elixir_style_guide
+- Erlang: https://github.com/inaka/erlang_guidelines
 - Haskell: https://github.com/tibbe/haskell-style-guide/blob/master/haskell-style.md
 - Java: https://google.github.io/styleguide/javaguide.html
-- JavaScript: https://github.com/airbnb/javascript/tree/master/es5
+- JavaScript: https://github.com/airbnb/javascript/
 - Groovy: http://groovy-lang.org/style-guide.html
 - Go: https://github.com/golang/go/wiki/CodeReviewComments
 - ObjC: https://github.com/NYTimes/objective-c-style-guide
@@ -51,8 +62,8 @@ You may find the current code base not 100% conform to the coding style and we w
 
 For [Vendor Extensions](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#vendorExtensions), please follow the naming convention below:
 - For general vendor extension, use lower case and hyphen. e.g. `x-is-unique`, `x-content-type`
-- For language-specified vendor extension, put it in the form of `x-{lang}-{extension-name}`. e.g. `x-objc-operation-id`, `x-java-feign-retry-limit` 
-- For a list of existing vendor extensions in use, please refer to https://github.com/swagger-api/swagger-codegen/wiki/Vendor-Extensions. If you've addaed new vendor extensions as part of your PR, please update the wiki page.
+- For language-specified vendor extension, put it in the form of `x-{lang}-{extension-name}`. e.g. `x-objc-operation-id`, `x-java-feign-retry-limit`
+- For a list of existing vendor extensions in use, please refer to https://github.com/swagger-api/swagger-codegen/wiki/Vendor-Extensions. If you've added new vendor extensions as part of your PR, please update the wiki page.
 
 ### Testing
 
@@ -72,3 +83,6 @@ To start the CI tests, you can run `mvn verify -Psamples` (assuming you've all t
 - Add test case(s) to cover the change
 - Document the fix in the code to make the code more readable
 - Make sure test cases passed after the change (one way is to leverage https://travis-ci.org/ to run the CI tests)
+- File a PR with meaningful title, description and commit messages. A good example is [PR-3306](https://github.com/swagger-api/swagger-codegen/pull/3306)
+- Recommended git settings
+   - `git config --global core.autocrlf input` to tell Git convert CRLF to LF on commit but not the other way around 

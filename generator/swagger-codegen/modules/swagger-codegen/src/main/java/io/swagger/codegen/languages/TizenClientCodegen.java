@@ -76,6 +76,7 @@ public class TizenClientCodegen extends DefaultCodegen implements CodegenConfig 
         typeMapping.put("map", "HashMap");
         typeMapping.put("number", "Long");
         typeMapping.put("object", PREFIX + "Object");
+        typeMapping.put("UUID", "String");
         //TODO binary should be mapped to byte array
         // mapped to String as a workaround
         typeMapping.put("binary", "String");
@@ -261,7 +262,10 @@ public class TizenClientCodegen extends DefaultCodegen implements CodegenConfig 
     }
 
     @Override
-    public String escapeReservedWord(String name) {
+    public String escapeReservedWord(String name) {           
+        if(this.reservedWordsMappings().containsKey(name)) {
+            return this.reservedWordsMappings().get(name);
+        }
         return "_" + name;
     }
 

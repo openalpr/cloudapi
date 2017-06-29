@@ -40,7 +40,8 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     public static final String SWIFT_USE_API_NAMESPACE = "swiftUseApiNamespace";
     public static final String DEFAULT_POD_AUTHORS = "Swagger Codegen";
     protected static final String LIBRARY_PROMISE_KIT = "PromiseKit";
-    protected static final String[] RESPONSE_LIBRARIES = { LIBRARY_PROMISE_KIT };
+    protected static final String LIBRARY_RX_SWIFT = "RxSwift";
+    protected static final String[] RESPONSE_LIBRARIES = { LIBRARY_PROMISE_KIT, LIBRARY_RX_SWIFT };
     protected String projectName = "SwaggerClient";
     protected boolean unwrapRequired;
     protected boolean swiftUseApiNamespace;
@@ -100,6 +101,10 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
                 );
         reservedWords = new HashSet<String>(
                 Arrays.asList(
+                    // name used by swift client
+                    "ErrorResponse",
+
+                    // swift keywords
                     "Int", "Int32", "Int64", "Int64", "Float", "Double", "Bool", "Void", "String", "Character", "AnyObject",
                     "class", "Class", "break", "as", "associativity", "deinit", "case", "dynamicType", "convenience", "enum", "continue",
                     "false", "dynamic", "extension", "default", "is", "didSet", "func", "do", "nil", "final", "import", "else",
@@ -153,11 +158,21 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         cliOptions.add(new CliOption(POD_SCREENSHOTS, "Screenshots used for Podspec"));
         cliOptions.add(new CliOption(POD_DOCUMENTATION_URL, "Documentation URL used for Podspec"));
         cliOptions.add(new CliOption(SWIFT_USE_API_NAMESPACE, "Flag to make all the API classes inner-class of {{projectName}}API"));
+        cliOptions.add(new CliOption(CodegenConstants.HIDE_GENERATION_TIMESTAMP, "hides the timestamp when files were generated")
+                .defaultValue(Boolean.TRUE.toString()));
+
     }
 
     @Override
     public void processOpts() {
         super.processOpts();
+        // default HIDE_GENERATION_TIMESTAMP to true
+        if (!additionalProperties.containsKey(CodegenConstants.HIDE_GENERATION_TIMESTAMP)) {
+            additionalProperties.put(CodegenConstants.HIDE_GENERATION_TIMESTAMP, Boolean.TRUE.toString());
+        } else {
+            additionalProperties.put(CodegenConstants.HIDE_GENERATION_TIMESTAMP,
+                    Boolean.valueOf(additionalProperties().get(CodegenConstants.HIDE_GENERATION_TIMESTAMP).toString()));
+        }
 
         // Setup project name
         if (additionalProperties.containsKey(PROJECT_NAME)) {
@@ -169,9 +184,8 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
         // Setup unwrapRequired option, which makes all the properties with "required" non-optional
         if (additionalProperties.containsKey(UNWRAP_REQUIRED)) {
-            setUnwrapRequired(Boolean.parseBoolean(String.valueOf(additionalProperties.get(UNWRAP_REQUIRED))));
+            setUnwrapRequired(convertPropertyToBooleanAndWriteBack(UNWRAP_REQUIRED));
         }
-        additionalProperties.put(UNWRAP_REQUIRED, unwrapRequired);
 
         // Setup unwrapRequired option, which makes all the properties with "required" non-optional
         if (additionalProperties.containsKey(RESPONSE_AS)) {
@@ -186,12 +200,14 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         if (ArrayUtils.contains(responseAs, LIBRARY_PROMISE_KIT)) {
             additionalProperties.put("usePromiseKit", true);
         }
+        if (ArrayUtils.contains(responseAs, LIBRARY_RX_SWIFT)) {
+            additionalProperties.put("useRxSwift", true);
+        }
 
         // Setup swiftUseApiNamespace option, which makes all the API classes inner-class of {{projectName}}API
         if (additionalProperties.containsKey(SWIFT_USE_API_NAMESPACE)) {
-            swiftUseApiNamespace = Boolean.parseBoolean(String.valueOf(additionalProperties.get(SWIFT_USE_API_NAMESPACE)));
+            setSwiftUseApiNamespace(convertPropertyToBooleanAndWriteBack(SWIFT_USE_API_NAMESPACE));
         }
-        additionalProperties.put(SWIFT_USE_API_NAMESPACE, swiftUseApiNamespace);
 
         if (!additionalProperties.containsKey(POD_AUTHORS)) {
             additionalProperties.put(POD_AUTHORS, DEFAULT_POD_AUTHORS);
@@ -214,11 +230,14 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     protected boolean isReservedWord(String word) {
         return word != null && reservedWords.contains(word); //don't lowercase as super does
     }
-
+    
     @Override
-    public String escapeReservedWord(String name) {
-        return "_" + name;  // add an underscore to the name
-    }
+    public String escapeReservedWord(String name) {           
+        if(this.reservedWordsMappings().containsKey(name)) {
+            return this.reservedWordsMappings().get(name);
+        }
+        return "_" + name; // add an underscore to the name
+    }    
 
     @Override
     public String modelFileFolder() {
@@ -258,8 +277,13 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     }
 
     @Override
+    public boolean isDataTypeFile(String dataType) {
+        return dataType != null && dataType.equals("NSURL");
+    }
+
+    @Override
     public boolean isDataTypeBinary(final String dataType) {
-      return dataType != null && dataType.equals("NSData");
+        return dataType != null && dataType.equals("NSData");
     }
 
     /**
@@ -370,12 +394,24 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
 
     @SuppressWarnings("static-method")
     public String toSwiftyEnumName(String value) {
+        if (value.length() == 0) {
+            return "Empty";
+        }
+
+        if (value.matches("^-?\\d*\\.{0,1}\\d+.*")) { // starts with number
+            value = "Number" + value;
+            value = value.replaceAll("-", "Minus");
+            value = value.replaceAll("\\+", "Plus");
+            value = value.replaceAll("\\.", "Dot");
+        }
+        
         // Prevent from breaking properly cased identifier
         if (value.matches("[A-Z][a-z0-9]+[a-zA-Z0-9]*")) {
             return value;
         }
-        char[] separators = {'-', '_', ' ', ':'};
-        return WordUtils.capitalizeFully(StringUtils.lowerCase(value), separators).replaceAll("[-_  :]", "");
+
+        char[] separators = {'-', '_', ' ', ':', '/'};
+        return WordUtils.capitalizeFully(StringUtils.lowerCase(value), separators).replaceAll("[-_  :/]", "");
     }
 
 
@@ -455,14 +491,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
     @Override
     public CodegenOperation fromOperation(String path, String httpMethod, Operation operation, Map<String, Model> definitions, Swagger swagger) {
         path = normalizePath(path); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
-        List<Parameter> parameters = operation.getParameters();
-        parameters = Lists.newArrayList(Iterators.filter(parameters.iterator(), new Predicate<Parameter>() {
-            @Override
-            public boolean apply(@Nullable Parameter parameter) {
-                return !(parameter instanceof HeaderParameter);
-            }
-        }));
-        operation.setParameters(parameters);
+        // issue 3914 - removed logic designed to remove any parameter of type HeaderParameter
         return super.fromOperation(path, httpMethod, operation, definitions, swagger);
     }
 
@@ -505,6 +534,10 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         this.responseAs = responseAs;
     }
 
+    public void setSwiftUseApiNamespace(boolean swiftUseApiNamespace) {
+        this.swiftUseApiNamespace = swiftUseApiNamespace;
+    }
+
     @Override
     public String toEnumValue(String value, String datatype) {
         if ("int".equals(datatype) || "double".equals(datatype) || "float".equals(datatype)) {
@@ -524,7 +557,7 @@ public class SwiftCodegen extends DefaultCodegen implements CodegenConfig {
         // TODO: this code is probably useless, because the var name is computed from the value in map.put("enum", toSwiftyEnumName(value));
         // number
         if ("int".equals(datatype) || "double".equals(datatype) || "float".equals(datatype)) {
-            String varName = new String(name);
+            String varName = name;
             varName = varName.replaceAll("-", "MINUS_");
             varName = varName.replaceAll("\\+", "PLUS_");
             varName = varName.replaceAll("\\.", "_DOT_");
