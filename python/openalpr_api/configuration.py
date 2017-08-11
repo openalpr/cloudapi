@@ -61,7 +61,7 @@ class Configuration(object):
         Constructor
         """
         # Default Base url
-        self.host = "http://localhost:8888/v2"
+        self.host = "https://api.openalpr.com/v2"
         # Default api client
         self.api_client = None
         # Temp file folder for downloading files
