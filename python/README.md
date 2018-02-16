@@ -51,7 +51,7 @@ import openalpr_api
 from openalpr_api.rest import ApiException
 from pprint import pprint
 # create an instance of the API class
-api_instance = openalpr_api.DefaultApi
+api_instance = openalpr_api.DefaultApi()
 image_bytes = 'image_bytes_example' # str | The image file that you wish to analyze encoded in base64 
 secret_key = 'secret_key_example' # str | The secret key used to authenticate your account.  You can view your  secret key by visiting  https://cloud.openalpr.com/ 
 country = 'country_example' # str | Defines the training data used by OpenALPR.  \"us\" analyzes  North-American style plates.  \"eu\" analyzes European-style plates.  This field is required if using the \"plate\" task  You may use multiple datasets by using commas between the country  codes.  For example, 'au,auwide' would analyze using both the  Australian plate styles.  A full list of supported country codes  can be found here https://github.com/openalpr/openalpr/tree/master/runtime_data/config 
