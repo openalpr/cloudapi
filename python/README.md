@@ -62,7 +62,7 @@ topn = 10 # int | The number of results you would like to be returned for plate 
 prewarp = '' # str | Prewarp configuration is used to calibrate the analyses for the  angle of a particular camera.  More information is available here http://doc.openalpr.com/accuracy_improvements.html#calibration  (optional) (default to )
 
 try:
-    api_response = api_instance.recognize_bytes(image_bytes, secret_key, country, recognize_vehicle=recognize_vehicle, state=state, return_image=return_image, topn=topn, prewarp=prewarp)
+    api_response = api_instance().recognize_bytes(image_bytes, secret_key, country, recognize_vehicle=recognize_vehicle, state=state, return_image=return_image, topn=topn, prewarp=prewarp)
     pprint(api_response)
 except ApiException as e:
     print "Exception when calling DefaultApi->recognize_bytes: %s\n" % e
